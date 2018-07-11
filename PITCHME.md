@@ -2,12 +2,11 @@
 
 ## exchange tech & stuff
 
-##### a demystification of sorts...
-
 @fa[arrow-down]
 
 +++
-@title[Piecemeal Lists]
+
+`Agenda`
 
 * Meat & Potatos |
 * Containers |
@@ -15,25 +14,25 @@
 
 ---
 
-@title[Purpose]
-
 ## Meat & Potatos
-
-i.e. environments
 
 @fa[arrow-down]
 
 +++
 
-@title[Piecemeal Concepts]
+`centralize user mgmt`
 
-Decide everything lives in AWS (or GCP, et al)
+<i>JumpCloud</i> is a <i>DaaS</i>
+
+* LDAP |
+* Single sign-on |
+* Resource control /w 2FA |
 
 +++
 
-@title[Piecemeal Lists]
+`everything in the cloud`
 
-Prefer on-premise over hosted solutions; use Docker containers, or AWS CloudFormation templates
+Use Docker containers, or AWS CloudFormation templates
 
 * Source control |
 * Issue tracking|
@@ -43,36 +42,12 @@ Prefer on-premise over hosted solutions; use Docker containers, or AWS CloudForm
 
 +++
 
-@title[Piecemeal Concepts]
+`embrace your inner network engineer`
 
-Define company users and control access to resources
-
-+++
-
-@title[Piecemeal Lists]
-
-<i>JumpCloud</i> is a <i>DaaS</i>
-
-* Centralized user management |
-* 2FA |
-* Single sign-on |
-* Resource control |
-
-+++
-
-@title[Piecemeal Concepts]
-
-Partition cloud resources into separate networks
-
-+++
-
-@title[Piecemeal Lists]
-
-Require VPN connections... no ssh over internet!
-
-* Development |
-* Staging |
-* Production |
+* Segment development, staging, and production cloud resources into separate networks|
+* Use distinct VPCs and corresponding VPN servers for each network|
+* No direct connection to any resources directly from the internet (e.g. no ssh over internet)|
+* Use Route 53 to perform DNS on internal resources|
 
 ---
 
@@ -103,13 +78,12 @@ RUN cd /tmp && wget https://dl.bintray.com/boostorg/release/1.66.0/source/boost_
 
 +++
 
-@title[Piecemeal Lists]
-
-`Images for Everything`
+`images of everything`
 
 * Development environment are images |
 * Delivery artifacts are images |
 * DinD (docker in docker) for CI/CD |
+* Images stored in private docker registry |
 
 +++
 
@@ -121,8 +95,6 @@ Google purpotedly runs 1 billion containers a week...
 
 +++
 
-@title[Piecemeal Lists]
-
 `docker-compose`
 
 Orchestrate your containers locally
@@ -133,8 +105,6 @@ Orchestrate your containers locally
 * Upgrade your unit tests to integration tests |
 
 +++
-
-@title[Piecemeal Lists]
 
 `docker swarm`
 
@@ -154,8 +124,6 @@ Separation of concerns, messaging, persistance, etc
 
 +++
 
-@title[Piecemeal Lists]
-
 `apps`
 
 * cross, c++ matching engine|
@@ -168,8 +136,6 @@ Separation of concerns, messaging, persistance, etc
 
 +++
 
-@title[Piecemeal Lists]
-
 `messaging`
 
 * raw sockets |
@@ -179,8 +145,6 @@ Separation of concerns, messaging, persistance, etc
 * kafka ✔ |
 
 +++
-
-@title[Piecemeal Lists]
 
 `event sourcing w/ kafka`
 
@@ -192,7 +156,22 @@ Separation of concerns, messaging, persistance, etc
 
 +++
 
-@title[Piecemeal Lists]
+`kafka example`
+
+```
+0| ACCEPTED    B 100 @ 1.00
+1| ACCEPTED    S 200 @ 2.00
+2| ACCEPTED    S 300 @ 3.00
+3| CANCELED    2
+4| CHECKPOINT
+               B 100 @ 1.00
+               S 200 @ 2.00
+5| CANCELED    1
+6| CHECKPOINT
+               B 100 @ 1.00
+```
+
++++
 
 `database changes w/ rabbitmq`
 
