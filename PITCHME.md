@@ -173,6 +173,13 @@ Separation of concerns, messaging, persistance, etc
 
 +++
 
+`better than snapshots`
+
+* prevents "snapshot-storms" from downstream apps
+* store event offsets in database, e.g. calculated positions as-of a particular event offset
+
++++
+
 `database changes w/ rabbitmq`
 
 use stored procedure to capture changes and do a <i>guaranteed</i> notify to interested parties
