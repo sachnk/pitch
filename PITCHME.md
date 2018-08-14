@@ -1,6 +1,7 @@
 @title[Introduction]
 
-## exchange tech & stuff
+## testing stuff
+in, generally, c++
 
 @fa[arrow-down]
 
@@ -8,46 +9,179 @@
 
 `Agenda`
 
-* Meat & Potatos |
+* The Basics |
+* In Practice |
 * Containers |
-* Architecture |
 
 ---
 
-## Meat & Potatos
+## The Basics
 
 @fa[arrow-down]
 
 +++
 
-`centralize user mgmt`
+Many different types of c++ testing libraries out there:
 
-<i>JumpCloud</i> is a <i>DaaS</i>
-
-* LDAP |
-* Single sign-on |
-* Resource control /w 2FA |
-
-+++
-
-`everything in the cloud`
-
-Use Docker containers, or AWS CloudFormation templates
-
-* Source control |
-* Issue tracking|
-* Wiki |
-* CI/CD |
-* Docker registry |
+* Google Test |
+* Boost Test |
+* Catch2 (header only!) |
+* et al. |
 
 +++
 
-`embrace your inner network engineer`
+`unit tests`
 
-* Segment development, staging, and production cloud resources into separate networks|
-* Use distinct VPCs and corresponding VPN servers for each network|
-* No direct connection to any resources directly from the internet (e.g. no ssh over internet)|
-* Use Route 53 to perform DNS on internal resources|
+Testing indvidual logical modules, e.g. a function
+
+```
+bool add_if_even(int& a, int b) {
+  if(b % 2 == 0) 
+    return false;
+  a += b;
+  return true;
+}
+```
+
++++
+
+Enter... Google Test
+
+```
+TEST(mytests, success) {
+  int a = 0;
+  EXPECT_EQ(add_if_even(a, 2), true);
+  EXPECT_EQ(a, 2);
+}
+
+
+TEST(mytests, failure) {
+  int a = 0;
+  EXPECT_EQ(add_if_even(a, 5), false);
+  EXPECT_EQ(a, 0);
+}
+```
+* Does my code compile and link
+* Test API semantics
+* No side-effects from successive tests, unless intended
+
++++
+
+`integration tests`
+
+Testing multiple modules together, e.g. your app + a database
+
++++
+
+`system testing (end-to-end)`
+
+Testing all workflows from the highest abstraction, e.g. GUI login
+
++++
+
+`coverage tests`
+
+How much of my code have I tested? 
+
+Writing in an interpreted language? You need this to proxy as a compiler for catching typos.
+
++++
+
+`CI/CD`
+
+* Continuous Integration |
+* Continuous Delivery |
+* Continuous Deployment |
+
+---
+
+## In Practice
+
+Even large, successful, HFTs don't do proper testing (Optiver, IMC, Sun...)
+
+@fa[arrow-down]
+
++++
+
+`too much friction`
+
+* code not well-suited for unit tests |
+* dependency hell |
+* time to market rationalization |
+* #TestingNotFirstClassCitizen |
+
++++
+
+`organize well & tend your garden`
+
+```text
+myproj
+├── app
+│   └── main.cpp
+├── libs
+│   ├── libA
+│   │   ├── include  <-- public headers *only*
+│   │   ├── src      <-- implementation
+│   │   └── test     <-- all tests for libA
+│   ├── libB
+│   │   ├── include
+│   │   ├── src
+│   │   └── test
+├── README.md
+```
++++
+
+`use your build framework`
+
+* choose a reasonably unopinionated framework (`CMake` is a fine choice)
+* get your build right; clean all to fix a build is not acceptable
+
++++
+
+`avoid static initialization`
+
+```c++
+class Securities {
+  Securities(string path);
+
+public:
+  static Securities& instance(string path = "") {
+    static Securities i(path)
+    return i;
+  }
+};
+```
+* adds initialization dependency |
+* adds side-effects across tests |
+* increases testing burden |
+
++++
+
+`move high burdening functions up the stack`
+
+e.g. a database query in your code is high burden
+
++++
+
+`how do I drive this?`
+
+for every logical module you write, ask yourself "how do I drive this module with unit tests?"
+
+
+naturally avoids dependency injections that increase testing burdens
+
++++
+
+`lack of CI/CD`
+
+Proper CI/CD forces accountability for failed test cases or poor coverage tests
+
++++
+
+`integration tests are even harder`
+
+* how do I test my app that depends on some pre-trade risk server and a MySQL database?
+* most of my complex logic lies in integration tests, and I can't write those, so what's the point of writing any unit tests?
 
 ---
 
@@ -59,31 +193,39 @@ Like virtual machines, but more lightweight
 
 +++
 
-Dockerfile
+`end the hairiness with...`
 
-```
-FROM centos:centos7
-
-RUN yum install -y gcc gcc-c++
-
-
-RUN cd /tmp && wget https://dl.bintray.com/boostorg/release/1.66.0/source/boost_1_66_0.tar.gz \
-  && tar xfz boost_1_66_0.tar.gz && rm boost_1_66_0.tar.gz && cd boost_1_66_0 \
-  && ./bootstrap.sh --prefix=/usr/local \
-  && ./b2 install
-```
-
-@[1,2](Build your image from an existing `centos:centos7` image)
-@[3-9](Run whatever commands need to add your dependencies)
+* managing your build and runtime dependencies |
+* running your integration tests |
+* other life problems |
 
 +++
 
-`images of everything`
+Define your environment as a `Dockerfile`:
+
+```Dockerfile
+FROM centos:centos7
+
+
+RUN yum install -y epel-release gcc gcc-c++
+RUN yum install -y make autoconf cmake cmake3 meson
+```
+
+@[1,1](Build your image from an existing `centos:centos7` image)
+@[4-5](Run whatever commands need to add your dependencies)
+
++++
+
+Example
+
++++
+
+`IoE: images of everything`
 
 * Development environment are images |
 * Delivery artifacts are images |
 * DinD (docker in docker) for CI/CD |
-* Images stored in private docker registry |
+* Images stored in docker registry |
 
 +++
 
@@ -106,83 +248,9 @@ Orchestrate your containers locally
 
 +++
 
-`docker swarm`
-
-Orchestrate your containers across multiple servers
-
-* Superset of docker-compose |
-* Replicas |
-* Self-healing |
-* Mesh network |
-* Kubernetes competition |
-
----
-
-## Architecture
-
-Separation of concerns, messaging, persistance, etc
+Example
 
 +++
-
-`apps`
-
-* cross, c++ matching engine|
-* risk, c++ risk layer|
-* spool, c++ database upserter|
-* gateway, node.js REST API|
-* dataplant, node.js WebSocket API|
-* painter, react.js website|
-* silk, python blockchain mgmt|
-
-+++
-
-`messaging`
-
-* raw sockets |
-* zmq |
-* nanomsg |
-* rabbitmq ✔ |
-* kafka ✔ |
-
-+++
-
-`event sourcing w/ kafka`
-
-* single source of truth |
-* immutable event log |
-* checkpoints |
-* recovery |
-* exactly-once semantics |
-
-+++
-
-`kafka example`
-
-```
-0| ACCEPTED    B 100 @ 1.00
-1| ACCEPTED    S 200 @ 2.00
-2| ACCEPTED    S 300 @ 3.00
-3| CANCELED    2
-4| CHECKPOINT
-               B 100 @ 1.00
-               S 200 @ 2.00
-5| CANCELED    1
-6| CHECKPOINT
-               B 100 @ 1.00
-```
-
-+++
-
-`better than snapshots`
-
-* prevents "snapshot-storms" from downstream apps
-* store event offsets in database, e.g. calculated positions as-of a particular event offset
-
-+++
-
-`database changes w/ rabbitmq`
-
-use stored procedure to capture changes and do a <i>guaranteed</i> notify to interested parties
 
 ---
 
